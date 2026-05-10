@@ -122,8 +122,19 @@ for key, default in [
     if key not in st.session_state:
         st.session_state[key] = default
 
-# ── Import Engines (graceful) ────────────────────────────────────
+# ── Auto-generate data on first run (Streamlit Cloud) ───────────
 BASE = os.path.dirname(__file__)
+_data_dir = os.path.join(BASE, "data")
+if not os.path.exists(os.path.join(_data_dir, "symptom_records.csv")):
+    try:
+        import importlib.util as _ilu
+        _spec = _ilu.spec_from_file_location("generate_data", os.path.join(BASE, "generate_data.py"))
+        _gd = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_gd)
+        _gd.generate_all()
+    except Exception:
+        os.makedirs(_data_dir, exist_ok=True)
+
+# ── Import Engines (graceful) ────────────────────────────────────
 
 def safe_import(module_name):
     import importlib.util, sys
